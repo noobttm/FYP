@@ -1,0 +1,261 @@
+from matplotlib import pyplot as plt
+import numpy as np
+import cv2
+import sys
+from matplotlib.lines import Line2D 
+
+cnt=[]
+path = r'C:\Users\noobt\Desktop\opencvexample\report2.jpg'  #path to the image
+img = cv2.imread(path)                                 #looking foe the image through path
+edges = cv2.Canny(img,0,250)    #Canny line detector
+
+global ix, ix1, iy, iy1
+global l1
+a = 0 
+k=[]
+
+class eqLine:
+#What the Object will contain
+    def __init__(object, x1, y1 ,x2 ,y2 ):
+        object.x1 = x1
+        object.y1 = y1
+        object.x2 = x2
+        object.y2 = y2
+
+#Creating eq
+    def convert(eq,x1, y1,x2,y2):
+        dy = y2-y1
+        dx = x2-x1
+        if dx != 0:
+            cnt[a-1].m = dy/dx
+            cnt[a-1].c = y1 - cnt[a-1].m * x1
+            print('Y =' + str(cnt[a-1].m) + 'X + ' + str(cnt[a-1].c))
+        else: 
+            print('X =' + str(x1)) 
+
+def press(event):
+    print('press', event.key)
+    if event.key == '1':
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        ax.set_title('Please press 2 to confirm\n Please double click the bend')
+        exit 
+    
+    if event.key == '2':
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        ax.set_title('Please press 3 to confirm\n Please select the connecting line')
+        exit 
+    
+    if event.key == '3':
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        ax.set_title('Please press 4 to confirm\n If top bend cannot be seen press N,\n else double click top bend')
+        exit 
+        
+    if event.key == '4':
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        ax.set_title('Please 5 to confirm\n Please select the top connecting line')
+        exit 
+        
+    if event.key == '5':
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        ax.set_title('Please press 6 to confirm\n Please press Y to view your hidden portion\n Please click 1 time to view')
+        exit 
+        
+    if event.key == '6':
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        ax.set_title('This is the hidden portion')
+        exit 
+        
+    if event.key == 'n':
+        #finding converging point
+        x_converge = (cnt[1].c-cnt[0].c)/(cnt[0].m-cnt[1].m)
+        y_converge = cnt[0].m * x_converge + cnt[0].c
+        print('The coordinates for the converge point is:'+ str(x_converge) + ',' + str(y_converge))
+
+        #finding equation of bend
+        dy_bend = cnt[2].y1 - y_converge
+        dx_bend = cnt[2].x1 - x_converge
+        m_final = dy_bend/dx_bend
+        c_final = cnt[2].y1 - m_final * cnt[2].x1
+        print('The equation of the final bend: Y =' + str(m_final) + 'X + ' + str(c_final))
+        
+        #finding the hidden coordinate
+        x_hidden = (cnt[3].c-c_final)/(m_final-cnt[3].m)
+        y_hidden = cnt[3].m * x_hidden + cnt[3].c
+        print('The coordinates for the hidden point is:'+ str(x_hidden) + ',' + str(y_hidden))
+        
+        #drawing of the non-visible lines
+        point1 = [cnt[2].x1, cnt[3].y1] 
+        point2 = [x_hidden, y_hidden]
+        
+        point3 = [cnt[2].x1, cnt[2].y1]
+        point4 = [x_hidden, y_hidden]
+        
+        x_values = [point1[0], point2[0]]
+        x_values1 = [point3[0], point4[0]]
+
+        y_values = [point1[1], point2[1]]
+        y_values1 = [point3[1], point4[1]]
+
+        #vertical hidden line
+        point5 = [x_hidden, y_hidden]
+        point6 = [x_hidden, 0]
+        
+        x_values2 = [point5[0], point6[0]]
+        y_values2 = [point5[1], point6[1]]
+        
+        line1 = Line2D(x_values, y_values)
+        ax.add_line(line1)
+        
+        line2 = Line2D(x_values1, y_values1)
+        ax.add_line(line2)
+        
+        line3 = Line2D(x_values2, y_values2)
+        ax.add_line(line3)
+        
+        plt.show()
+        
+    if event.key == 'y':
+        #finding converging point
+        x_converge = (cnt[1].c-cnt[0].c)/(cnt[0].m-cnt[1].m)
+        y_converge = cnt[0].m * x_converge + cnt[0].c
+        print('The coordinates for the converge point is:'+ str(x_converge) + ',' + str(y_converge))
+
+        #finding equation of bend
+        dy_bend = cnt[2].y1 - y_converge
+        dx_bend = cnt[2].x1 - x_converge
+        m_final = dy_bend/dx_bend
+        c_final = cnt[2].y1 - m_final * cnt[2].x1
+        print('The equation of the final bend: Y =' + str(m_final) + 'X + ' + str(c_final))
+        
+        #finding the hidden coordinate
+        x_hidden = (cnt[3].c-c_final)/(m_final-cnt[3].m)
+        y_hidden = cnt[3].m * x_hidden + cnt[3].c
+        print('The coordinates for the hidden point is:'+ str(x_hidden) + ',' + str(y_hidden))
+        
+        #finding equation of top bend
+        dy_top = cnt[4].y1 - y_converge
+        dx_top = cnt[4].x1 - x_converge
+        m_top = dy_top/dx_top
+        c_top = cnt[4].y1 - m_top * cnt[4].x1
+        print('The equation of the final bend: Y =' + str(m_top) + 'X + ' + str(c_top))
+        
+        #finding top hidden coordinate
+        x_tophidden = x_hidden
+        y_tophidden = m_top * x_tophidden + c_top
+        print('The coordinates for the hidden point is:'+ str(x_tophidden) + ',' + str(y_tophidden))
+        
+        #drawing of the non-visible lines
+        point1 = [cnt[2].x1, cnt[3].y1] 
+        point2 = [x_hidden, y_hidden]
+        
+        point3 = [cnt[2].x1, cnt[2].y1]
+        point4 = [x_hidden, y_hidden]
+        
+        x_values = [point1[0], point2[0]]
+        x_values1 = [point3[0], point4[0]]
+
+        y_values = [point1[1], point2[1]]
+        y_values1 = [point3[1], point4[1]]
+
+        #vertical hidden line
+        point5 = [x_hidden, y_hidden]
+        point6 = [x_hidden, y_tophidden]
+        
+        x_values2 = [point5[0], point6[0]]
+        y_values2 = [point5[1], point6[1]]
+        
+        #drawing top non- visible lines
+        point7 = [cnt[2].x1, cnt[5].y2]
+        point8 = [x_tophidden, y_tophidden]
+        
+        point9 = [cnt[4].x1, cnt[4].y1]
+        point10 = [x_tophidden, y_tophidden]
+        
+        x_values3 = [point7[0], point8[0]]
+        y_values3 = [point7[1], point8[1]]
+        
+        x_values4 = [point9[0], point10[0]]
+        y_values4 = [point9[1], point10[1]]
+        
+        line1 = Line2D(x_values, y_values)
+        ax.add_line(line1)
+        
+        line2 = Line2D(x_values1, y_values1)
+        ax.add_line(line2)
+        
+        line3 = Line2D(x_values2, y_values2)
+        ax.add_line(line3)
+        
+        line4 = Line2D(x_values3, y_values3)
+        ax.add_line(line4)
+        
+        line5 = Line2D(x_values4, y_values4)
+        ax.add_line(line5)
+        
+        plt.show()
+
+        
+class LineBuilder(object):
+    def __init__(self, fig, ax):
+        self.xs = []
+        self.ys = []
+        self.ax = ax
+        self.fig = fig
+
+    def mouse_click(self, event):
+        print('click', event)
+        if not event.inaxes:
+            return
+        #left click
+        if event.button == 1:
+            self.xs.append(event.xdata)
+            self.ys.append(event.ydata)
+             
+             
+            #add a line to plot if it has 2 points
+            if len(self.xs) % 2 == 0:
+                
+                line, = self.ax.plot([self.xs[-2], self.xs[-1]], [self.ys[-2], self.ys[-1]], 'r')
+                line.figure.canvas.draw()
+                ix, iy = self.xs[-2], self.ys[-2]
+                ix1, iy1 = self.xs[-1], self.ys[-1]                 
+                print (ix, iy, ix1, iy1)
+                l1 = eqLine(ix, iy, ix1, iy1)
+                cnt.append(l1)
+                global a 
+                a += 1 
+
+                
+        #right click
+        if event.button == 3:
+            if len(self.xs) > 0:
+                self.xs.pop()
+                self.ys.pop()
+            #delete last line drawn if the line is missing a point,
+            #never delete the original stock plot
+            if len(self.xs) % 2 == 1 and len(self.ax.lines) > 1:
+                self.ax.lines.pop()
+            #refresh plot
+            self.fig.canvas.draw()
+
+    def mouse_move(self, event):
+        if not event.inaxes:
+            return
+        #dtaw a temporary line from a single point to the mouse position
+        #delete the temporary line when mouse move to another position
+        if len(self.xs) % 2 == 1:
+            line, =self.ax.plot([self.xs[-1], event.xdata], [self.ys[-1], event.ydata], 'r')
+            line.figure.canvas.draw()
+            self.ax.lines.pop()
+            
+
+ax = plt.gca()
+fig = plt.gcf()
+implot = ax.imshow(edges,cmap = 'gray')
+ax.set_title('Please select the first line followed by 1 to confirm\n Please select second line')
+draw_line = LineBuilder(fig, ax)
+fig.canvas.mpl_connect('button_press_event', draw_line.mouse_click)
+fig.canvas.mpl_connect('motion_notify_event', draw_line.mouse_move)
+fig.canvas.mpl_connect('key_press_event', press)
+
+
