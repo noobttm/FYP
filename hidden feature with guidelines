@@ -1,0 +1,316 @@
+from matplotlib import pyplot as plt
+import numpy as np
+import cv2
+import sys
+from matplotlib.lines import Line2D 
+
+#Getting an image
+path = input("Enter a fully qualified path for an image: ")
+img = cv2.imread(path)
+edges = cv2.Canny(img,0,250)    #converting the image through canny
+
+cnt=[]                      #setting count as an array
+global ix, ix1, iy, iy1     #decalring coordinates as global variable
+global l1                   #declaring l1 as global variable applying eqLine function
+a = 0   
+k=[]                        #setting k as an array
+
+class eqLine:
+#What the Object will contain
+    def __init__(object, x1, y1 ,x2 ,y2):   #storing the coordinates for use later
+        object.x1 = x1
+        object.y1 = y1
+        object.x2 = x2
+        object.y2 = y2
+
+#Creating eq
+    def convert(eq,x1, y1, x2, y2):         #converts coordinates stored into equation
+        dy = y2-y1                          #change in y-axis
+        dx = x2-x1                          #change in x-axis
+        if dx != 0:
+            cnt[a-1].m = dy/dx              #gradient
+            cnt[a-1].c = y1 - cnt[a-1].m * x1   #line of equation
+            print('Y =' + str(cnt[a-1].m) + 'X + ' + str(cnt[a-1].c))
+        else: 
+            print('X =' + str(x1)) 
+
+def press(event):               #function for keyboard input
+    print('press', event.key)
+    if event.key == '1':        #if keyboard key '1' is pressed
+        #conversion function
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        #instructions for next step
+        ax.set_title('Please press 2 to confirm\n Please double click the bend')
+        exit 
+    
+    if event.key == '2':        #if keyboard key '2' is pressed
+        #conversion function
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        #instructions for next step
+        ax.set_title('Please press 3 to confirm\n Please select the connecting line')
+        exit 
+    
+    if event.key == '3':        #if keyboard key '3' is pressed
+        #conversion function
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        #instructions for next step
+        ax.set_title('Please press 4 to confirm\n If top bend cannot be seen press N,\n else double click top bend')
+        exit 
+        
+    if event.key == '4':        #if keyboard key '4' is pressed
+        #conversion function
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        #instructions for next step
+        ax.set_title('Please 5 to confirm\n Please select the top connecting line')
+        exit 
+        
+    if event.key == '5':        #if keyboard key '5' is pressed
+        #conversion function
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        #instructions for next step
+        ax.set_title('Please press 6 to confirm\n Please press Y to view your hidden portion\n Please click 1 time to view')
+        exit 
+        
+    if event.key == '6':        #if keyboard key '6' is pressed
+        #conversion function
+        cnt[a-1].convert(cnt[a-1].x1, cnt[a-1].y1, cnt[a-1].x2, cnt[a-1].y2)
+        #display instruction
+        ax.set_title('This is the hidden portion')
+        exit 
+        
+    if event.key == 'n':        #if keyboard key 'n' is pressed
+        #finding vanishing point    #'n' key means no top part needed to be drawn
+        x_converge = (cnt[1].c-cnt[0].c)/(cnt[0].m-cnt[1].m)
+        y_converge = cnt[0].m * x_converge + cnt[0].c
+        print('The coordinates for the converge point is:'+ str(x_converge) + ',' + str(y_converge))
+
+        #finding equation of bend
+        dy_bend = cnt[2].y1 - y_converge
+        dx_bend = cnt[2].x1 - x_converge
+        m_final = dy_bend/dx_bend
+        c_final = cnt[2].y1 - m_final * cnt[2].x1
+        print('The equation of the final bend: Y =' + str(m_final) + 'X + ' + str(c_final))
+        
+        #finding the hidden coordinate
+        x_hidden = (cnt[3].c-c_final)/(m_final-cnt[3].m)
+        y_hidden = cnt[3].m * x_hidden + cnt[3].c
+        print('The coordinates for the hidden point is:'+ str(x_hidden) + ',' + str(y_hidden))
+        
+        #drawing of the hidden edges
+        point1 = [cnt[2].x1, cnt[3].y1] 
+        point2 = [x_hidden, y_hidden]
+        
+        point3 = [cnt[2].x1, cnt[2].y1]
+        point4 = [x_hidden, y_hidden]
+        
+        x_values = [point1[0], point2[0]]
+        x_values1 = [point3[0], point4[0]]
+
+        y_values = [point1[1], point2[1]]
+        y_values1 = [point3[1], point4[1]]
+
+        #vertical hidden line
+        point5 = [x_hidden, y_hidden]
+        point6 = [x_hidden, 0]
+        
+        x_values2 = [point5[0], point6[0]]
+        y_values2 = [point5[1], point6[1]]
+        
+        line1 = Line2D(x_values, y_values)
+        ax.add_line(line1)
+        
+        line2 = Line2D(x_values1, y_values1)
+        ax.add_line(line2)
+        
+        line3 = Line2D(x_values2, y_values2)
+        ax.add_line(line3)
+        
+        plt.show()          #display image
+        
+    if event.key == 'y':        #if keyboard key 'y' is pressed
+        #finding vanishing point    #'y' key means top bend is visible
+        x_converge = (cnt[1].c-cnt[0].c)/(cnt[0].m-cnt[1].m)
+        y_converge = cnt[0].m * x_converge + cnt[0].c
+        print('The coordinates for the converge point is:'+ str(x_converge) + ',' + str(y_converge))
+
+        #finding equation of bend
+        dy_bend = cnt[2].y1 - y_converge
+        dx_bend = cnt[2].x1 - x_converge
+        m_final = dy_bend/dx_bend
+        c_final = cnt[2].y1 - m_final * cnt[2].x1
+        print('The equation of the final bend: Y =' + str(m_final) + 'X + ' + str(c_final))
+        
+        #finding the hidden coordinate
+        x_hidden = (cnt[3].c-c_final)/(m_final-cnt[3].m)
+        y_hidden = cnt[3].m * x_hidden + cnt[3].c
+        print('The coordinates for the hidden point is:'+ str(x_hidden) + ',' + str(y_hidden))
+        
+        #finding equation of top bend
+        dy_top = cnt[4].y1 - y_converge
+        dx_top = cnt[4].x1 - x_converge
+        m_top = dy_top/dx_top
+        c_top = cnt[4].y1 - m_top * cnt[4].x1
+        print('The equation of the final bend: Y =' + str(m_top) + 'X + ' + str(c_top))
+        
+        #finding top hidden coordinate
+        x_tophidden = x_hidden
+        y_tophidden = m_top * x_tophidden + c_top
+        print('The coordinates for the hidden point is:'+ str(x_tophidden) + ',' + str(y_tophidden))
+        
+        #drawing of the hidden edges
+        point1 = [cnt[2].x1, cnt[3].y1] 
+        point2 = [x_hidden, y_hidden]
+        
+        point3 = [cnt[2].x1, cnt[2].y1]
+        point4 = [x_hidden, y_hidden]
+        
+        x_values = [point1[0], point2[0]]
+        x_values1 = [point3[0], point4[0]]
+
+        y_values = [point1[1], point2[1]]
+        y_values1 = [point3[1], point4[1]]
+
+        #vertical hidden line
+        point5 = [x_hidden, y_hidden]
+        point6 = [x_hidden, y_tophidden]
+        
+        x_values2 = [point5[0], point6[0]]
+        y_values2 = [point5[1], point6[1]]
+        
+        #drawing top hidden edges
+        point7 = [cnt[2].x1, cnt[5].y2]
+        point8 = [x_tophidden, y_tophidden]
+        
+        point9 = [cnt[4].x1, cnt[4].y1]
+        point10 = [x_tophidden, y_tophidden]
+        
+        x_values3 = [point7[0], point8[0]]
+        y_values3 = [point7[1], point8[1]]
+        
+        x_values4 = [point9[0], point10[0]]
+        y_values4 = [point9[1], point10[1]]
+        
+        #for report purposes (in yellow)
+        point11 = [x_hidden, y_hidden]
+        point12 = [x_converge, y_converge]
+        
+        point13 = [x_tophidden, y_tophidden]
+        point14 = [x_converge, y_converge]
+        
+        point15 = [cnt[0].x1, cnt[0].y1]
+        point16 = [x_converge, y_converge]
+        
+        point17 = [cnt[1].x1, cnt[1].y1]
+        point18 = [x_converge, y_converge]
+        
+        x_values5 = [point11[0], point12[0]]
+        y_values5 = [point11[1], point12[1]]
+        
+        x_values6 = [point13[0], point14[0]]
+        y_values6 = [point13[1], point14[1]]
+        
+        x_values7 = [point15[0], point16[0]]
+        y_values7 = [point15[1], point16[1]]
+        
+        x_values8 = [point17[0], point18[0]]
+        y_values8 = [point17[1], point18[1]]
+        
+        line1 = Line2D(x_values, y_values)
+        ax.add_line(line1)
+        
+        line2 = Line2D(x_values1, y_values1)
+        ax.add_line(line2)
+        
+        line3 = Line2D(x_values2, y_values2)
+        ax.add_line(line3)
+        
+        line4 = Line2D(x_values3, y_values3)
+        ax.add_line(line4)
+        
+        line5 = Line2D(x_values4, y_values4)
+        ax.add_line(line5)
+        
+        line6 = Line2D(x_values5, y_values5, color = 'y')
+        ax.add_line(line6)
+        
+        line7 = Line2D(x_values6, y_values6, color = 'y')
+        ax.add_line(line7)
+        
+        line8 = Line2D(x_values7, y_values7, color = 'y')
+        ax.add_line(line8)
+        
+        line9 = Line2D(x_values8, y_values8, color = 'y')
+        ax.add_line(line9)
+        
+        plt.show()
+
+        
+class LineBuilder(object):          #line creator
+    def __init__(self, fig, ax):    #function to self create axises
+        self.xs = []
+        self.ys = []
+        self.ax = ax
+        self.fig = fig
+
+    def mouse_click(self, event):   #function to detect mouse clicks
+        print('click', event)
+        if not event.inaxes:        #click will not function out of axises 
+            return
+        #left click
+        if event.button == 1:
+            self.xs.append(event.xdata) #saving x-coordinates
+            self.ys.append(event.ydata) #saving y-coordinates
+             
+             
+            #add a line to plot if it has 2 points
+            if len(self.xs) % 2 == 0:
+                
+                line, = self.ax.plot([self.xs[-2], self.xs[-1]], [self.ys[-2], self.ys[-1]], 'r')
+                line.figure.canvas.draw()
+                ix, iy = self.xs[-2], self.ys[-2]
+                ix1, iy1 = self.xs[-1], self.ys[-1]                 
+                print (ix, iy, ix1, iy1)
+                l1 = eqLine(ix, iy, ix1, iy1)   #apply eqLine function to store coordinates
+                cnt.append(l1)
+                global a 
+                a += 1          #a to increase by 1 before use
+
+                
+        #right click
+        if event.button == 3:
+            if len(self.xs) > 0:
+                self.xs.pop()
+                self.ys.pop()
+            #delete last line drawn if the line is missing a point,
+            #never delete the original stock plot
+            if len(self.xs) % 2 == 1 and len(self.ax.lines) > 1:
+                self.ax.lines.pop()
+            #refresh plot
+            self.fig.canvas.draw()
+
+    def mouse_move(self, event):
+        if not event.inaxes:
+            return
+        #dtaw a temporary line from a single point to the mouse position
+        #delete the temporary line when mouse move to another position
+        if len(self.xs) % 2 == 1:
+            line, =self.ax.plot([self.xs[-1], event.xdata], [self.ys[-1], event.ydata], 'r')
+            line.figure.canvas.draw()
+            self.ax.lines.pop()
+            
+
+ax = plt.gca()
+fig = plt.gcf()
+implot = ax.imshow(edges,cmap = 'gray')     #convert image to grayscale
+#starting instructions
+ax.set_title('Please select the first line followed by 1 to confirm\n Please select second line')
+#allow LineBuilder function
+draw_line = LineBuilder(fig, ax)
+#allow mouse click function
+fig.canvas.mpl_connect('button_press_event', draw_line.mouse_click)
+#allow drawing function
+fig.canvas.mpl_connect('motion_notify_event', draw_line.mouse_move)
+#allow keyboard input function
+fig.canvas.mpl_connect('key_press_event', press)
+
+
